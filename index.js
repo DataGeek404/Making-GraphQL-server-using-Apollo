@@ -1,72 +1,58 @@
-import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+const { ApolloServer, gql } = require('apollo-server');
+const sequelize = require('./db'); // Your Sequelize instance
+const User = require('./models/User'); // Sequelize model for 'users'
 
-const typeDefs = `#graphql
-  type Book {
-    title: String
-    author: String
-  }
-
-  type School {
-    name: String
-    principal: String
-  }
-
-  type Country {
-    name: String
-    population: Int
-    area: Float
-  }
-
-  type CombinedData {
-    books: [Book]
-    schools: [School]
-    countries: [Country]
+// ✅ GraphQL Schema Definition
+const typeDefs = gql`
+  type User {
+    id: Int!
+    name: String!
+    email: String!
   }
 
   type Query {
-    getAllData: CombinedData
-    books: [Book]
-    schools: [School]
-    countries: [Country]
+    getUsers: [User]
+  }
+
+  type Mutation {
+    createUser(name: String!, email: String!): User
   }
 `;
 
-const books = [
-  { title: 'The Awakening', author: 'Kate Chopin' },
-  { title: 'City of Glass', author: 'Paul Auster' },
-];
-
-const schools = [
-  { name: 'Gatero Girls High School', principal: 'James Muchiri' },
-  { name: 'Nanyuki High School', principal: 'Oliver Minishi' },
-];
-
-const countries = [
-  { name: 'Kenya', population: 50_000_000, area: 580_367 },
-  { name: 'Uganda', population: 45_000_000, area: 241_038 },
-];
-
+// ✅ Resolver Functions
 const resolvers = {
   Query: {
-    getAllData: () => ({
-      books,
-      schools,
-      countries
-    }),
-    books: () => books,
-    schools: () => schools,
-    countries: () => countries
+    getUsers: async () => {
+      return await User.findAll();
+    },
+  },
+  Mutation: {
+    createUser: async (_, { name, email }) => {
+      return await User.create({ name, email });
+    },
   },
 };
 
+// ✅ Apollo Server Initialization
 const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-const { url } = await startStandaloneServer(server, {
-  listen: { port: 3000 },
-});
+// ✅ Connect to DB and Start Server
+const startServer = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('✅ MySQL connection established successfully.');
 
-console.log(`🚀  Server ready at: ${url}`);
+    // DO NOT sync if you're using an existing table
+    // await sequelize.sync(); 
+
+    const { url } = await server.listen({ port: 3000 });
+    console.log(`🚀 Server ready at ${url}`);
+  } catch (error) {
+    console.error('❌ Unable to connect to the database:', error);
+  }
+};
+
+startServer();
