@@ -7,7 +7,6 @@ const User = sequelize.define('User', {
   email: DataTypes.STRING,
 }, {
   timestamps: true, // Automatically adds createdAt/updatedAt
-  tableName: 'users',
 });
 
 // Post Model
@@ -16,7 +15,6 @@ const Post = sequelize.define('Post', {
   content: DataTypes.TEXT,
 }, {
   timestamps: true,
-  tableName: 'posts',
 });
 
 // Comment Model
@@ -24,7 +22,6 @@ const Comment = sequelize.define('Comment', {
   content: DataTypes.TEXT,
 }, {
   timestamps: true,
-  tableName: 'comments',
 });
 
 // Profile Model
@@ -34,13 +31,11 @@ const Profile = sequelize.define('Profile', {
   location: DataTypes.STRING,
 }, {
   timestamps: true,
-  tableName: 'profiles',
 });
 
 // Follower Model (Junction table for User followers)
 const Follower = sequelize.define('Follower', {}, {
   timestamps: true,
-  tableName: 'followers',
 });
 
 // Relationships
@@ -59,9 +54,7 @@ Profile.belongsTo(User);
 User.belongsToMany(User, { through: Follower, as: 'Followers', foreignKey: 'follower_id' });
 User.belongsToMany(User, { through: Follower, as: 'Followed', foreignKey: 'followed_id' });
 
-
-
-module.exports = User;  // Export User model
+module.exports = Profile;  // Export User model
 
 // This code defines a Sequelize model for a User entity.
 // It imports the DataTypes object from Sequelize and the sequelize instance from the db.js file.
